@@ -1,24 +1,78 @@
-extern crate serde_json;
+use serde_json;
 
 use super::data_struct::{Row, Tabular};
-use serde_json::{Error as JSONError, Value};
+use super::read_file;
+use serde_json::Value;
+use std::collections::HashSet;
 use std::fs::File;
-use std::io::Error;
-use std::io::{Read, Write};
+use std::io::Write;
+use std::io::{Error, ErrorKind};
 
-pub fn read_file(path: String) -> Result<String, Error> {
-    let mut f = File::open(path)?;
-
-    let mut contents = String::new();
-    f.read_to_string(&mut contents)?;
-    Ok(contents)
+fn create_io_error(msg: &str) -> Error {
+    // errors can be created from strings
+    Error::new(ErrorKind::Other, msg)
 }
 
-pub fn read_json(path: String) -> Result<Tabular, Error> {
+pub fn read_json(path: &str) -> Result<Tabular, Error> {
     let text = read_file(path)?;
-    let v: Value = serde_json::from_str(&text)?;
-    println!("{:?}", v);
-    let data = Tabular::new(Row::new(vec!["".to_owned()]));
+    parse_json(&text)
+}
+
+pub fn parse_json(text: &str) -> Result<Tabular, Error> {
+    let value: Value = serde_json::from_str(text)?;
+
+    let data = match value {
+        Value::Array(v) => {
+            let mut headers: HashSet<String> = HashSet::new();
+            // validate struct
+            for (i, row) in v.iter().enumerate() {
+                match row {
+                    Value::Object(row) => {
+                        if i == 0 {
+                            for entry in row {
+                                headers.insert(entry.0.to_owned());
+                            }
+                        } else {
+                            for entry in row {
+                                if !headers.contains(entry.0) {
+                                    return Err(create_io_error(
+                                        "the json is not a fully valid tabular struct",
+                                    ));
+                                }
+                            }
+                        }
+                    }
+                    _ => return Err(create_io_error("the tabular row is not a object")),
+                }
+            }
+
+            // do the real parse
+            let mut headers_row: Row = Row::new(vec![]);
+            for k in headers {
+                headers_row.values.push(k.to_string());
+            }
+
+            let mut rv = Tabular::new(headers_row.clone());
+            for row in v {
+                let mut r = Row::new(vec![]);
+                for k in headers_row.as_vec().iter() {
+                    r.values.push(
+                        match row.get(k).unwrap() {
+                            Value::String(s) => s.to_string(),
+                            Value::Number(s) => format!("{}", s),
+                            Value::Bool(s) => format!("{}", s),
+                            _ => "".to_string(),
+                        }
+                    );
+                }
+                // let r = Row::from_iter(headers_row.as_vec().iter().map(|k|format!("{}", row.get(k).unwrap()).to_owned()));
+                rv.add_row(r);
+            }
+
+            rv
+        }
+        _ => return Err(create_io_error("the json is not array")),
+    };
 
     Ok(data)
 }
@@ -30,6 +84,7 @@ pub fn write_json_object(path: &str, data: &Value, pretty: bool) -> Result<(), E
     } else {
         text = serde_json::to_string(data)?;
     }
+
     let mut file = File::create(path)?;
     file.write_all(text.as_bytes())?;
     Ok(())
