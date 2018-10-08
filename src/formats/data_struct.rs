@@ -1,3 +1,11 @@
+// TODO: parse accorrding to the field value type
+pub enum JSONTypes {
+    string,
+    int,
+    float,
+    null,
+}
+
 #[derive(Debug, Clone)]
 pub struct Row {
     values: Vec<String>,
@@ -38,5 +46,13 @@ impl Tabular {
         for x in iter {
             self.data.push(x)
         }
+    }
+
+    pub fn has_headers(&self) -> bool {
+        self.headers.values.len() > 0
+    }
+
+    pub fn has_data(&self) -> bool {
+        self.data.len() > 0
     }
 }
