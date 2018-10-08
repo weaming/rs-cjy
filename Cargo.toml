@@ -1,0 +1,20 @@
+[package]
+name = "rs-tablib"
+version = "0.1.0"
+authors = ["weaming <garden.yuen@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+csv = "1"
+
+[lib]
+name = "formats"
+path = "src/formats/lib.rs"
+
+[[bin]]
+name = "csv-json"
+path = "src/bin/csv_json.rs"
+
+[[bin]]
+name = "yaml-json"
+path = "src/bin/yaml_json.rs"
