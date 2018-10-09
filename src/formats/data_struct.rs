@@ -105,4 +105,8 @@ impl Tabular {
         io_json::write_json_object(path, &data, true)?;
         Ok(())
     }
+
+    pub fn write_yaml(&self, path: &str) -> Result<(), Box<Error>> {
+        Ok(())
+    }
 }

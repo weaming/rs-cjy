@@ -1,17 +1,13 @@
 use serde_json;
 
+use super::create_io_error;
 use super::data_struct::{Row, Tabular};
 use super::read_file;
 use serde_json::Value;
 use std::collections::HashSet;
 use std::fs::File;
 use std::io::Write;
-use std::io::{Error, ErrorKind};
-
-fn create_io_error(msg: &str) -> Error {
-    // errors can be created from strings
-    Error::new(ErrorKind::Other, msg)
-}
+use std::io::Error;
 
 pub fn read_json(path: &str) -> Result<Tabular, Error> {
     let text = read_file(path)?;
@@ -56,6 +52,7 @@ pub fn parse_json(text: &str) -> Result<Tabular, Error> {
             for row in v {
                 let mut r = Row::new(vec![]);
                 for k in headers_row.as_vec().iter() {
+                    // TODO: process differenct value types
                     r.values.push(match row.get(k).unwrap() {
                         Value::String(s) => s.to_string(),
                         Value::Number(s) => format!("{}", s),
@@ -63,7 +60,6 @@ pub fn parse_json(text: &str) -> Result<Tabular, Error> {
                         _ => "".to_string(),
                     });
                 }
-                // let r = Row::from_iter(headers_row.as_vec().iter().map(|k|format!("{}", row.get(k).unwrap()).to_owned()));
                 rv.add_row(r);
             }
 
