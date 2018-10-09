@@ -1,6 +1,9 @@
-use std::io::Error;
-use super::io_json;
 use super::create_io_error;
+use super::*;
+use csv;
+use linked_hash_map::LinkedHashMap;
+use std::io::Error;
+use yaml_rust::Yaml;
 
 // TODO: parse accorrding to the field value type
 pub enum JSONTypes {
@@ -43,6 +46,18 @@ impl Row {
             );
         }
         map
+    }
+
+    pub fn to_yaml_hash(&self, headers: &Row) -> Yaml {
+        let mut rv = LinkedHashMap::new();
+
+        for (i, v) in self.values.iter().enumerate() {
+            rv.insert(
+                Yaml::String(headers.values[i].clone()),
+                Yaml::String(v.clone()),
+            );
+        }
+        Yaml::Hash(rv)
     }
 }
 
@@ -87,7 +102,7 @@ impl Tabular {
         Ok(())
     }
 
-    pub fn write_json(&self, path: &str) -> Result<(), Error> {
+    pub fn get_output_headers_data(&self) -> Result<(&Row, &[Row]), Error> {
         let headers;
         let data;
         if self.has_headers() {
@@ -96,17 +111,26 @@ impl Tabular {
         } else {
             if self.has_data() {
                 headers = &self.data[0];
-                data = &self.data[1..]
+                data = &self.data[1..];
             } else {
                 return Err(create_io_error("the tablular does not have data"));
             }
         }
+        Ok((&headers, data))
+    }
+
+    pub fn write_json(&self, path: &str) -> Result<(), Error> {
+        let (headers, data) = self.get_output_headers_data()?;
         let data = data.iter().map(|row| row.to_serde_map(headers)).collect();
         io_json::write_json_object(path, &data, true)?;
         Ok(())
     }
 
     pub fn write_yaml(&self, path: &str) -> Result<(), Error> {
+        let (headers, data) = self.get_output_headers_data()?;
+        let data = data.iter().map(|row| row.to_yaml_hash(headers)).collect();
+        let doc = Yaml::Array(data);
+        io_yaml::write_yaml_doc(path, &doc)?;
         Ok(())
     }
 }

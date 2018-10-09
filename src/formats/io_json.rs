@@ -2,11 +2,10 @@ use serde_json;
 
 use super::create_io_error;
 use super::data_struct::{Row, Tabular};
-use super::read_file;
+use super::{read_file, write_file};
 use serde_json::Value;
 use std::collections::HashSet;
 use std::fs::File;
-use std::io::Write;
 use std::io::Error;
 
 pub fn read_json(path: &str) -> Result<Tabular, Error> {
@@ -79,7 +78,5 @@ pub fn write_json_object(path: &str, data: &Value, pretty: bool) -> Result<(), E
         text = serde_json::to_string(data)?;
     }
 
-    let mut file = File::create(path)?;
-    file.write_all(text.as_bytes())?;
-    Ok(())
+    write_file(path, &text)
 }

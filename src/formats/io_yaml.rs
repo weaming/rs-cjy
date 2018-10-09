@@ -1,5 +1,5 @@
 use super::create_io_error;
-use super::read_file;
+use super::{read_file, write_file};
 use super::{Row, Tabular};
 use serde_json::Value;
 use std::collections::HashSet;
@@ -81,4 +81,12 @@ pub fn parse_yaml(text: &str) -> Result<Tabular, Error> {
     };
 
     Ok(data)
+}
+
+
+pub fn write_yaml_doc(path: &str, doc: &Yaml) -> Result<(), Error>  {
+    let mut out_str = String::new();
+    let mut emitter = YamlEmitter::new(&mut out_str);
+    emitter.dump(doc).unwrap(); // dump the YAML object to a String
+    write_file(path, &out_str)
 }
