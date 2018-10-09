@@ -1,5 +1,6 @@
 use std::io::Error;
 use super::io_json;
+use super::create_io_error;
 
 // TODO: parse accorrding to the field value type
 pub enum JSONTypes {
@@ -97,8 +98,7 @@ impl Tabular {
                 headers = &self.data[0];
                 data = &self.data[1..]
             } else {
-                // TODO: correct error
-                return Ok(());
+                return Err(create_io_error("the tablular does not have data"));
             }
         }
         let data = data.iter().map(|row| row.to_serde_map(headers)).collect();
