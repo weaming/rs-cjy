@@ -3,6 +3,11 @@ name = "rs-cjy"
 version = "0.1.0"
 authors = ["weaming <garden.yuen@gmail.com>"]
 edition = "2018"
+license = "MIT"
+description = "Convert between CSV, JSON, YAML."
+homepage = "https://github.com/weaming/rs-cjy"
+repository = "https://github.com/weaming/rs-cjy"
+keywords = ["csv", "json", "yaml"]
 
 [dependencies]
 csv = "1"
