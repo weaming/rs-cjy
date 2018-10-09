@@ -1,5 +1,5 @@
 [package]
-name = "rs-tablib"
+name = "rs-cjy"
 version = "0.1.0"
 authors = ["weaming <garden.yuen@gmail.com>"]
 edition = "2018"

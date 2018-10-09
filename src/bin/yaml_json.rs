@@ -10,11 +10,11 @@ fn main() {
     let text = read_file(STDIN).unwrap();
     match io_json::parse_json(&text) {
         Ok(r) => {
-            r.write_yaml(STDOUT);
+            r.write_yaml(STDOUT).expect("write yaml fail");
         },
         Err(_) => match io_yaml::parse_yaml(&text) {
             Ok(r) => {
-                r.write_json(STDOUT);
+                r.write_json(STDOUT).expect("write json fail");
             },
             Err(e) => {
                 println!("{:?}", e);

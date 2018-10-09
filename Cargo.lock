@@ -46,7 +46,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rs-tablib"
+name = "rs-cjy"
 version = "0.1.0"
 dependencies = [
  "csv 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
