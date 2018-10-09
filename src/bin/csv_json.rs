@@ -4,20 +4,22 @@ use formats::*;
 use std::process;
 
 static STDIN: &'static str = "/dev/stdin";
+static STDOUT: &'static str = "/dev/stdout";
 
 fn main() {
     let text = read_file(STDIN).unwrap();
-    let data = match io_json::parse_json(&text) {
-        Ok(r) => r,
+    match io_json::parse_json(&text) {
+        Ok(r) => {
+            r.write_csv(STDOUT);
+        },
         Err(_) => match io_csv::parse_csv(&text) {
-            Ok(r) => r,
+            Ok(r) => {
+                r.write_json(STDOUT);
+            },
             Err(e) => {
                 println!("{:?}", e);
                 process::exit(1)
             }
         },
     };
-    let data = io_json::parse_json(&text);
-    // let data = io_csv::read_csv(STDIN);
-    println!("{:?}", data);
 }

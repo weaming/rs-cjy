@@ -56,14 +56,12 @@ pub fn parse_json(text: &str) -> Result<Tabular, Error> {
             for row in v {
                 let mut r = Row::new(vec![]);
                 for k in headers_row.as_vec().iter() {
-                    r.values.push(
-                        match row.get(k).unwrap() {
-                            Value::String(s) => s.to_string(),
-                            Value::Number(s) => format!("{}", s),
-                            Value::Bool(s) => format!("{}", s),
-                            _ => "".to_string(),
-                        }
-                    );
+                    r.values.push(match row.get(k).unwrap() {
+                        Value::String(s) => s.to_string(),
+                        Value::Number(s) => format!("{}", s),
+                        Value::Bool(s) => format!("{}", s),
+                        _ => "".to_string(),
+                    });
                 }
                 // let r = Row::from_iter(headers_row.as_vec().iter().map(|k|format!("{}", row.get(k).unwrap()).to_owned()));
                 rv.add_row(r);
