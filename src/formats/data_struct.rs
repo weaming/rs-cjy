@@ -1,4 +1,4 @@
-use std::error::Error;
+use std::io::Error;
 use super::io_json;
 
 // TODO: parse accorrding to the field value type
@@ -74,7 +74,7 @@ impl Tabular {
         self.data.len() > 0
     }
 
-    pub fn write_csv(&self, path: &str) -> Result<(), Box<Error>> {
+    pub fn write_csv(&self, path: &str) -> Result<(), Error> {
         let mut wtr = csv::Writer::from_path(path)?;
         if self.has_headers() {
             wtr.write_record(self.headers.as_vec());
@@ -86,7 +86,7 @@ impl Tabular {
         Ok(())
     }
 
-    pub fn write_json(&self, path: &str) -> Result<(), Box<Error>> {
+    pub fn write_json(&self, path: &str) -> Result<(), Error> {
         let headers;
         let data;
         if self.has_headers() {
@@ -106,7 +106,7 @@ impl Tabular {
         Ok(())
     }
 
-    pub fn write_yaml(&self, path: &str) -> Result<(), Box<Error>> {
+    pub fn write_yaml(&self, path: &str) -> Result<(), Error> {
         Ok(())
     }
 }
