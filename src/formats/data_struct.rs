@@ -1,3 +1,5 @@
+extern crate serde_json;
+
 use super::create_io_error;
 use super::*;
 use csv;

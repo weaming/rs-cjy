@@ -2,7 +2,6 @@ use super::create_io_error;
 use super::{read_file, write_file};
 use super::{Row, Tabular};
 use serde_json::Value;
-use std::collections::HashSet;
 use std::fs::File;
 use std::io::Write;
 use std::io::{Error, ErrorKind};
@@ -19,7 +18,7 @@ pub fn parse_yaml(text: &str) -> Result<Tabular, Error> {
     let data = match doc {
         Yaml::Array(doc) => {
             // validate struct
-            let mut headers: HashSet<String> = HashSet::new();
+            let mut headers = Vec::new();
             for (i, row) in doc.iter().enumerate() {
                 match row {
                     Yaml::Hash(row) => {
@@ -27,7 +26,7 @@ pub fn parse_yaml(text: &str) -> Result<Tabular, Error> {
                             for entry in row {
                                 match entry.0 {
                                     Yaml::String(s) => {
-                                        headers.insert(s.to_string());
+                                        headers.push(s);
                                     }
                                     _ => {}
                                 }
@@ -36,7 +35,7 @@ pub fn parse_yaml(text: &str) -> Result<Tabular, Error> {
                             for entry in row {
                                 match entry.0 {
                                     Yaml::String(s) => {
-                                        if !headers.contains(s) {
+                                        if !headers.contains(&s) {
                                             return Err(create_io_error(
                                                 "the yaml is not a fully valid tabular struct",
                                             ));
@@ -83,8 +82,7 @@ pub fn parse_yaml(text: &str) -> Result<Tabular, Error> {
     Ok(data)
 }
 
-
-pub fn write_yaml_doc(path: &str, doc: &Yaml) -> Result<(), Error>  {
+pub fn write_yaml_doc(path: &str, doc: &Yaml) -> Result<(), Error> {
     let mut out_str = String::new();
     let mut emitter = YamlEmitter::new(&mut out_str);
     emitter.dump(doc).unwrap(); // dump the YAML object to a String

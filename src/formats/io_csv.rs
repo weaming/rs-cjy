@@ -11,7 +11,8 @@ pub fn read_csv(path: &str) -> Result<Tabular, Box<Error>> {
 
 pub fn parse_csv(text: &str) -> Result<Tabular, Box<Error>> {
     let mut rdr = ReaderBuilder::new().trim(Trim::All).from_reader(text.as_bytes());
-    let mut data = Tabular::new(Row::from_iter(rdr.headers()?.iter()));
+    let header = Row::from_iter(rdr.headers()?.iter());
+    let mut data = Tabular::new(header);
     let mut has_error = false;
     // ignore error row
     data.add_data_from_iter(

@@ -1,6 +1,6 @@
 [package]
 name = "rs-cjy"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["weaming <garden.yuen@gmail.com>"]
 edition = "2018"
 license = "MIT"
@@ -24,5 +24,9 @@ name = "csv-json"
 path = "src/bin/csv_json.rs"
 
 [[bin]]
-name = "yaml-json"
-path = "src/bin/yaml_json.rs"
+name = "json-yaml"
+path = "src/bin/json_yaml.rs"
+
+[[bin]]
+name = "csv-yaml"
+path = "src/bin/csv_yaml.rs"

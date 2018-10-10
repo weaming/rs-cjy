@@ -4,7 +4,6 @@ use super::create_io_error;
 use super::data_struct::{Row, Tabular};
 use super::{read_file, write_file};
 use serde_json::Value;
-use std::collections::HashSet;
 use std::fs::File;
 use std::io::Error;
 
@@ -18,18 +17,18 @@ pub fn parse_json(text: &str) -> Result<Tabular, Error> {
 
     let data = match value {
         Value::Array(v) => {
-            let mut headers: HashSet<String> = HashSet::new();
+            let mut headers = Vec::new();
             // validate struct
             for (i, row) in v.iter().enumerate() {
                 match row {
                     Value::Object(row) => {
                         if i == 0 {
                             for entry in row {
-                                headers.insert(entry.0.to_owned());
+                                headers.push(entry.0);
                             }
                         } else {
                             for entry in row {
-                                if !headers.contains(entry.0) {
+                                if !headers.contains(&entry.0) {
                                     return Err(create_io_error(
                                         "the json is not a fully valid tabular struct",
                                     ));
