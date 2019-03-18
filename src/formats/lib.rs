@@ -1,3 +1,4 @@
+use std::env;
 use std::fs::File;
 use std::io::{Error, ErrorKind, Read, Write};
 
@@ -26,4 +27,21 @@ pub fn write_file(path: &str, text: &str) -> Result<(), Error> {
 fn create_io_error(msg: &str) -> Error {
     // errors can be created from strings
     Error::new(ErrorKind::Other, msg)
+}
+
+pub fn has_env(name: &str) -> bool {
+    match env::var(name) {
+        Ok(val) => {
+            if val.len() > 0 {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        Err(_) => return false,
+    }
+}
+
+pub fn is_debug() -> bool {
+    has_env("DEBUG")
 }

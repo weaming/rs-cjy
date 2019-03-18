@@ -3,18 +3,20 @@ use std::fmt;
 
 #[derive(Debug)]
 pub struct IOError {
-    details: String
+    details: String,
 }
 
 impl IOError {
     pub fn new(msg: &str) -> IOError {
-        IOError{details: msg.to_string()}
+        IOError {
+            details: msg.to_string(),
+        }
     }
 }
 
 impl fmt::Display for IOError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,"{}",self.details)
+        write!(f, "{}", self.details)
     }
 }
 

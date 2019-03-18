@@ -1,8 +1,8 @@
 use super::data_struct::{Row, Tabular};
 use super::error::IOError;
+use super::read_file;
 use csv::{ReaderBuilder, Trim};
 use std::error::Error;
-use super::read_file;
 
 pub fn read_csv(path: &str) -> Result<Tabular, Box<Error>> {
     let text = read_file(path)?;
@@ -10,7 +10,9 @@ pub fn read_csv(path: &str) -> Result<Tabular, Box<Error>> {
 }
 
 pub fn parse_csv(text: &str) -> Result<Tabular, Box<Error>> {
-    let mut rdr = ReaderBuilder::new().trim(Trim::All).from_reader(text.as_bytes());
+    let mut rdr = ReaderBuilder::new()
+        .trim(Trim::All)
+        .from_reader(text.as_bytes());
     let header = Row::from_iter(rdr.headers()?.iter());
     let mut data = Tabular::new(header);
     let mut has_error = false;

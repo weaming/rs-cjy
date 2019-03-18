@@ -9,10 +9,10 @@ use yaml_rust::Yaml;
 
 // TODO: parse accorrding to the field value type
 pub enum JSONTypes {
-    string,
-    int,
-    float,
-    null,
+    String,
+    Int,
+    Float,
+    Null,
 }
 
 #[derive(Debug, Clone)]
@@ -95,11 +95,21 @@ impl Tabular {
     pub fn write_csv(&self, path: &str) -> Result<(), Error> {
         let mut wtr = csv::Writer::from_path(path)?;
         if self.has_headers() {
-            wtr.write_record(self.headers.as_vec());
+            match wtr.write_record(self.headers.as_vec()) {
+                Err(e) => {
+                    return Err(create_io_error(&format!("{:?}", e)));
+                }
+                _ => {}
+            }
         }
 
         for row in self.data.iter() {
-            wtr.write_record(row.as_vec());
+            match wtr.write_record(row.as_vec()) {
+                Err(e) => {
+                    return Err(create_io_error(&format!("{:?}", e)));
+                }
+                _ => {}
+            }
         }
         Ok(())
     }
@@ -124,7 +134,7 @@ impl Tabular {
     pub fn write_json(&self, path: &str) -> Result<(), Error> {
         let (headers, data) = self.get_output_headers_data()?;
         let data = data.iter().map(|row| row.to_serde_map(headers)).collect();
-        io_json::write_json_object(path, &data, true)?;
+        io_json::write_json_object(path, &data, has_env("PRETTY"))?;
         Ok(())
     }
 

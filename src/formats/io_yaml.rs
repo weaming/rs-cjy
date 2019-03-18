@@ -1,10 +1,7 @@
 use super::create_io_error;
 use super::{read_file, write_file};
 use super::{Row, Tabular};
-use serde_json::Value;
-use std::fs::File;
-use std::io::Write;
-use std::io::{Error, ErrorKind};
+use std::io::Error;
 use yaml_rust::{Yaml, YamlEmitter, YamlLoader};
 
 pub fn read_yaml(path: &str) -> Result<Tabular, Error> {

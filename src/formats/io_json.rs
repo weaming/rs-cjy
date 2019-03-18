@@ -2,9 +2,8 @@ use serde_json;
 
 use super::create_io_error;
 use super::data_struct::{Row, Tabular};
-use super::{read_file, write_file};
+use super::{is_debug, read_file, write_file};
 use serde_json::Value;
-use std::fs::File;
 use std::io::Error;
 
 pub fn read_json(path: &str) -> Result<Tabular, Error> {
@@ -14,18 +13,23 @@ pub fn read_json(path: &str) -> Result<Tabular, Error> {
 
 pub fn parse_json(text: &str) -> Result<Tabular, Error> {
     let value: Value = serde_json::from_str(text)?;
+    if is_debug() {
+        println!("{:?}", value);
+    }
 
     let data = match value {
-        Value::Array(v) => {
+        Value::Array(arr) => {
             let mut headers = Vec::new();
             // validate struct
-            for (i, row) in v.iter().enumerate() {
+            for (i, row) in arr.iter().enumerate() {
                 match row {
                     Value::Object(row) => {
+                        // parse headers
                         if i == 0 {
                             for entry in row {
                                 headers.push(entry.0);
                             }
+                        //parse data
                         } else {
                             for entry in row {
                                 if !headers.contains(&entry.0) {
@@ -47,7 +51,7 @@ pub fn parse_json(text: &str) -> Result<Tabular, Error> {
             }
 
             let mut rv = Tabular::new(headers_row.clone());
-            for row in v {
+            for row in arr {
                 let mut r = Row::new(vec![]);
                 for k in headers_row.as_vec().iter() {
                     // TODO: process differenct value types
