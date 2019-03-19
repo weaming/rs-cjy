@@ -8,6 +8,6 @@ They all accept from STDIN, print to STDOUT, and will try to dentect the input t
 
 ## TODO
 
-* [ ] keep order of headers
-* [ ] parse for different field types
+* [x] keep order of headers
+* [x] parse for different field types
 
