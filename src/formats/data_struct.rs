@@ -1,6 +1,5 @@
-extern crate serde_json;
-
 use super::create_io_error;
+use super::serde_json;
 use super::*;
 use csv;
 use linked_hash_map::LinkedHashMap;
@@ -54,13 +53,12 @@ pub struct Tabular {
 pub fn str_to_basictypes(v: String) -> BasicTypes {
     match v.parse::<f64>() {
         Ok(f_val) => {
-            // if v.contains(".") {
-            //     row.values.push(BasicTypes::Number(Number::Float(f_val)));
-            // } else {
-            //     let num = v.parse::<i64>().unwrap();
-            //     row.values.push(BasicTypes::Number(Number::Int(num)));
-            // };
-            BasicTypes::Number(Number::Float(f_val))
+            if v.contains(".") {
+                return BasicTypes::Number(Number::Float(f_val));
+            } else {
+                let num = v.parse::<i64>().unwrap();
+                return BasicTypes::Number(Number::Int(num));
+            };
         }
         Err(_) => BasicTypes::String(v),
     }
@@ -93,12 +91,8 @@ impl Row {
             let serde_v = match v.clone() {
                 BasicTypes::String(s) => serde_json::Value::String(s),
                 BasicTypes::Number(n) => match n {
-                    Number::Int(n) => {
-                        serde_json::Value::Number(serde_json::Number::from_f64(n as f64).unwrap())
-                    }
-                    Number::Float(n) => {
-                        serde_json::Value::Number(serde_json::Number::from_f64(n).unwrap())
-                    }
+                    Number::Int(n) => json!(n),
+                    Number::Float(n) => json!(n),
                 },
                 BasicTypes::Null => serde_json::Value::Null,
             };

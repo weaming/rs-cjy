@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate serde_json;
+
 use std::env;
 use std::fs::File;
 use std::io::{Error, ErrorKind, Read, Write};
