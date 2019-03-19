@@ -1,6 +1,6 @@
 use super::create_io_error;
 use super::{read_file, write_file};
-use super::{Row, Tabular};
+use super::{str_to_basictypes, Row, Tabular};
 use std::io::Error;
 use yaml_rust::{Yaml, YamlEmitter, YamlLoader};
 
@@ -50,7 +50,7 @@ pub fn parse_yaml(text: &str) -> Result<Tabular, Error> {
             // do the real parse
             let mut headers_row: Row = Row::new(vec![]);
             for k in headers {
-                headers_row.values.push(k.to_string());
+                headers_row.values.push(str_to_basictypes(k.to_string()));
             }
 
             let mut rv = Tabular::new(headers_row.clone());
@@ -66,7 +66,7 @@ pub fn parse_yaml(text: &str) -> Result<Tabular, Error> {
                         Yaml::Boolean(s) => format!("{}", s),
                         _ => "".to_string(),
                     };
-                    r.values.push(field);
+                    r.values.push(str_to_basictypes(field));
                 }
                 rv.add_row(r);
             }

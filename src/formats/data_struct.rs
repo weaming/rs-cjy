@@ -4,20 +4,45 @@ use super::create_io_error;
 use super::*;
 use csv;
 use linked_hash_map::LinkedHashMap;
+use std::fmt;
 use std::io::Error;
 use yaml_rust::Yaml;
 
-// TODO: parse accorrding to the field value type
-pub enum JSONTypes {
-    String,
-    Int,
-    Float,
+#[derive(Debug, Clone, PartialEq)]
+pub enum Number {
+    Int(i64),
+    Float(f64),
+}
+
+impl fmt::Display for Number {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Number::Int(v) => write!(f, "{}", v),
+            Number::Float(v) => write!(f, "{}", v),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum BasicTypes {
+    String(String),
+    Number(Number),
     Null,
+}
+
+impl ToString for BasicTypes {
+    fn to_string(&self) -> String {
+        match self {
+            BasicTypes::String(s) => s.to_owned(),
+            BasicTypes::Number(num) => format!("{}", num),
+            BasicTypes::Null => "null".to_string(),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
 pub struct Row {
-    pub values: Vec<String>,
+    pub values: Vec<BasicTypes>,
 }
 
 #[derive(Debug)]
@@ -26,26 +51,58 @@ pub struct Tabular {
     pub data: Vec<Row>,
 }
 
+pub fn str_to_basictypes(v: String) -> BasicTypes {
+    match v.parse::<f64>() {
+        Ok(f_val) => {
+            // if v.contains(".") {
+            //     row.values.push(BasicTypes::Number(Number::Float(f_val)));
+            // } else {
+            //     let num = v.parse::<i64>().unwrap();
+            //     row.values.push(BasicTypes::Number(Number::Int(num)));
+            // };
+            BasicTypes::Number(Number::Float(f_val))
+        }
+        Err(_) => BasicTypes::String(v),
+    }
+}
+
 impl Row {
     pub fn new(values: Vec<String>) -> Row {
-        Row { values: values }
+        let mut row = Row { values: vec![] };
+        for v in values {
+            row.values.push(str_to_basictypes(v));
+        }
+        row
     }
 
     pub fn from_iter<'a, T: Iterator<Item = &'a str>>(iter: T) -> Row {
         Row::new(iter.map(|x| String::from(x)).collect())
     }
 
-    pub fn as_vec(&self) -> &Vec<String> {
+    pub fn as_vec(&self) -> &Vec<BasicTypes> {
         &self.values
+    }
+
+    pub fn to_csv_vec(&self) -> Vec<String> {
+        self.values.iter().map(|v| v.to_string()).collect()
     }
 
     pub fn to_serde_map(&self, headers: &Row) -> serde_json::Map<String, serde_json::Value> {
         let mut map = serde_json::Map::new();
         for (i, v) in self.values.iter().enumerate() {
-            map.insert(
-                headers.values[i].clone(),
-                serde_json::Value::String(v.clone()),
-            );
+            let serde_v = match v.clone() {
+                BasicTypes::String(s) => serde_json::Value::String(s),
+                BasicTypes::Number(n) => match n {
+                    Number::Int(n) => {
+                        serde_json::Value::Number(serde_json::Number::from_f64(n as f64).unwrap())
+                    }
+                    Number::Float(n) => {
+                        serde_json::Value::Number(serde_json::Number::from_f64(n).unwrap())
+                    }
+                },
+                BasicTypes::Null => serde_json::Value::Null,
+            };
+            map.insert(headers.values[i].clone().to_string(), serde_v);
         }
         map
     }
@@ -54,9 +111,17 @@ impl Row {
         let mut rv = LinkedHashMap::new();
 
         for (i, v) in self.values.iter().enumerate() {
+            let yaml_val = match v.clone() {
+                BasicTypes::String(s) => Yaml::String(s),
+                BasicTypes::Number(n) => match n {
+                    Number::Int(n) => Yaml::Integer(n),
+                    Number::Float(n) => Yaml::Real(n.to_string()),
+                },
+                BasicTypes::Null => Yaml::Null,
+            };
             rv.insert(
-                Yaml::String(headers.values[i].clone()),
-                Yaml::String(v.clone()),
+                Yaml::String(headers.values[i].clone().to_string()),
+                yaml_val,
             );
         }
         Yaml::Hash(rv)
@@ -95,7 +160,7 @@ impl Tabular {
     pub fn write_csv(&self, path: &str) -> Result<(), Error> {
         let mut wtr = csv::Writer::from_path(path)?;
         if self.has_headers() {
-            match wtr.write_record(self.headers.as_vec()) {
+            match wtr.write_record(self.headers.to_csv_vec()) {
                 Err(e) => {
                     return Err(create_io_error(&format!("{:?}", e)));
                 }
@@ -104,7 +169,7 @@ impl Tabular {
         }
 
         for row in self.data.iter() {
-            match wtr.write_record(row.as_vec()) {
+            match wtr.write_record(row.to_csv_vec()) {
                 Err(e) => {
                     return Err(create_io_error(&format!("{:?}", e)));
                 }

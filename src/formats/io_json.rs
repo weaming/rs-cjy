@@ -2,7 +2,7 @@ use serde_json;
 
 use super::create_io_error;
 use super::data_struct::{Row, Tabular};
-use super::{is_debug, read_file, write_file};
+use super::{is_debug, read_file, str_to_basictypes, write_file, BasicTypes};
 use serde_json::Value;
 use std::io::Error;
 
@@ -47,19 +47,20 @@ pub fn parse_json(text: &str) -> Result<Tabular, Error> {
             // do the real parse
             let mut headers_row: Row = Row::new(vec![]);
             for k in headers {
-                headers_row.values.push(k.to_string());
+                headers_row.values.push(str_to_basictypes(k.to_string()));
             }
 
             let mut rv = Tabular::new(headers_row.clone());
             for row in arr {
                 let mut r = Row::new(vec![]);
-                for k in headers_row.as_vec().iter() {
+                for k in headers_row.to_csv_vec().iter() {
                     // TODO: process differenct value types
                     r.values.push(match row.get(k).unwrap() {
-                        Value::String(s) => s.to_string(),
-                        Value::Number(s) => format!("{}", s),
-                        Value::Bool(s) => format!("{}", s),
-                        _ => "".to_string(),
+                        Value::String(s) => str_to_basictypes(s.to_string()),
+                        Value::Number(s) => str_to_basictypes(format!("{}", s)),
+                        Value::Bool(s) => str_to_basictypes(format!("{}", s)),
+                        Value::Null => BasicTypes::Null,
+                        _ => str_to_basictypes("".to_string()),
                     });
                 }
                 rv.add_row(r);

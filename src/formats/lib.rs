@@ -7,8 +7,7 @@ pub mod error;
 pub mod io_csv;
 pub mod io_json;
 pub mod io_yaml;
-
-pub use self::data_struct::{Row, Tabular};
+pub use self::data_struct::*;
 
 pub fn read_file(path: &str) -> Result<String, Error> {
     let mut f = File::open(path)?;
@@ -24,8 +23,8 @@ pub fn write_file(path: &str, text: &str) -> Result<(), Error> {
     Ok(())
 }
 
+/// errors can be created from strings
 fn create_io_error(msg: &str) -> Error {
-    // errors can be created from strings
     Error::new(ErrorKind::Other, msg)
 }
 
