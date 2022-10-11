@@ -13,7 +13,7 @@ keywords = ["csv", "json", "yaml"]
 csv = "1.0.5"
 serde_json = { version = "1.0.39", features = ["preserve_order"] }
 yaml-rust = "0.4.3"
-linked-hash-map = "0.5.1"
+linked-hash-map = "0.5.3"
 
 [lib]
 name = "formats"
